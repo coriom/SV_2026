@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import PhotoPairGame from "../components/PhotoPairGame";
 import ValentinesProposal from "@/components/ValentinesProposal";
-import TextFooter from "@/components/TextFooter";
 import OrientationGuard from "@/components/OrientationGuard";
 
 const ANIM_DURATION = 2;
@@ -31,9 +30,7 @@ export default function Home() {
             className="flex flex-col items-center"
           >
             <PhotoPairGame handleShowProposal={handleShowProposal} />
-            <div className="mt-4 md:mt-0">
-              <TextFooter />
-            </div>
+
           </motion.div>
         ) : (
           <motion.div

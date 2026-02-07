@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-// 18 images
-const images = [
+// 18 images (valid ones)
+const baseImages = [
   "/game-photos/1.avif",
   "/game-photos/2.avif",
   "/game-photos/3.avif",
@@ -26,18 +26,19 @@ const images = [
   "/game-photos/18.avif",
 ];
 
-// Create 18 pairs of images (36 images in total)
-const imagePairs = images.flatMap((image) => [image, image]);
+// 18 pairs -> 36 cards
+const buildPairs = (imgs: string[]) => imgs.flatMap((img) => [img, img]);
 
-const shuffleArray = (array: string[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
+const shuffleArray = <T,>(array: T[]) => {
+  const a = [...array];
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return array;
+  return a;
 };
 
-const heartLayout = [
+const heartLayout: Array<Array<number | null>> = [
   [null, null, 0, 1, null, 2, 3, null, null],
   [null, 4, 5, 6, 7, 8, 9, 10, null],
   [11, 12, 13, 14, 15, 16, 17, 18, 19],
@@ -47,33 +48,35 @@ const heartLayout = [
   [null, null, null, null, 35, null, null, null, null],
 ];
 
-type ValentinesProposalProps = {
+type PhotoPairGameProps = {
   handleShowProposal: () => void;
 };
 
-export default function PhotoPairGame({
-  handleShowProposal,
-}: ValentinesProposalProps) {
+export default function PhotoPairGame({ handleShowProposal }: PhotoPairGameProps) {
+  const imagePairs = useMemo(() => buildPairs(baseImages), []);
+  const [deck] = useState<string[]>(() => shuffleArray(imagePairs));
+
   const [selected, setSelected] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [incorrect, setIncorrect] = useState<number[]>([]);
-  const [images] = useState(() => shuffleArray([...imagePairs]));
 
   const handleClick = async (index: number) => {
-    if (selected.length === 2 || matched.includes(index) || selected.includes(index)) return;
+    if (selected.length === 2) return;
+    if (matched.includes(index)) return;
+    if (selected.includes(index)) return;
 
     if (selected.length === 1) {
       const firstIndex = selected[0];
       setSelected((prev) => [...prev, index]);
 
-      if (images[firstIndex] === images[index]) {
+      if (deck[firstIndex] === deck[index]) {
         setMatched((prev) => [...prev, firstIndex, index]);
         setSelected([]);
       } else {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         setIncorrect([firstIndex, index]);
-        setTimeout(() => setIncorrect([]), 1000); // Clear incorrect after 1 second
+        setTimeout(() => setIncorrect([]), 1000);
         setTimeout(() => setSelected([]), 1000);
       }
     } else {
@@ -81,22 +84,21 @@ export default function PhotoPairGame({
     }
   };
 
-  // Check if game is won
   useEffect(() => {
-    if (matched.length === imagePairs.length) {
+    if (matched.length === deck.length) {
       handleShowProposal();
     }
-  }, [matched, handleShowProposal]);
+  }, [matched, deck.length, handleShowProposal]);
 
   return (
     <div className="grid grid-cols-9 gap-1 lg:gap-2 max-w-[95vw] mx-auto place-items-center">
       {/* Image preload */}
       <div className="hidden">
-        {images.map((image, i) => (
+        {deck.map((src, i) => (
           <Image
             key={i}
-            src={image}
-            alt={`Image ${i + 1}`}
+            src={src}
+            alt={`Preload ${i + 1}`}
             fill
             className="object-cover"
             priority
@@ -104,33 +106,30 @@ export default function PhotoPairGame({
         ))}
       </div>
 
-      {heartLayout.flat().map((index, i) =>
-        index !== null ? (
+      {heartLayout.flat().map((slotIndex, i) =>
+        slotIndex !== null ? (
           <motion.div
             key={i}
             className="w-[11vh] h-[11vh] lg:w-20 lg:h-20 relative cursor-pointer"
             whileHover={{ scale: 1.1 }}
-            onClick={() => handleClick(index)}
-            style={{ perspective: "1000px" }} // Add perspective for 3D effect
+            onClick={() => handleClick(slotIndex)}
+            style={{ perspective: "1000px" }}
           >
-            {/* Back of the card */}
-            {!selected.includes(index) && !matched.includes(index) && (
+            {/* Back */}
+            {!selected.includes(slotIndex) && !matched.includes(slotIndex) && (
               <motion.div
                 className="w-full h-full bg-gray-300 rounded-sm lg:rounded-md absolute z-10"
                 initial={{ rotateY: 0 }}
                 animate={{
-                  rotateY:
-                    selected.includes(index) || matched.includes(index)
-                      ? 180
-                      : 0,
+                  rotateY: selected.includes(slotIndex) || matched.includes(slotIndex) ? 180 : 0,
                 }}
                 transition={{ duration: 0.5 }}
                 style={{ backfaceVisibility: "hidden" }}
               />
             )}
 
-            {/* Front of the card (image) */}
-            {(selected.includes(index) || matched.includes(index)) && (
+            {/* Front */}
+            {(selected.includes(slotIndex) || matched.includes(slotIndex)) && (
               <motion.div
                 className="w-full h-full absolute"
                 initial={{ rotateY: -180 }}
@@ -139,22 +138,22 @@ export default function PhotoPairGame({
                 style={{ backfaceVisibility: "hidden" }}
               >
                 <Image
-                  src={images[index]}
-                  alt={`Imagen ${index + 1}`}
+                  src={deck[slotIndex]}
+                  alt={`Image ${slotIndex + 1}`}
                   fill
                   className="rounded-sm lg:rounded-md object-cover"
                 />
               </motion.div>
             )}
 
-            {/* Incorrect animation */}
-            {incorrect.includes(index) && (
+            {/* Incorrect */}
+            {incorrect.includes(slotIndex) && (
               <motion.div
                 className="absolute inset-0"
                 animate={{ scale: [1, 1.1, 1], opacity: [1, 0, 1] }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="w-full h-full bg-red-500 rounded-sm lg:rounded-md"></div>
+                <div className="w-full h-full bg-red-500 rounded-sm lg:rounded-md" />
               </motion.div>
             )}
           </motion.div>

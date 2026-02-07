@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "photos:fix": "node scripts/fix-avif.mjs"
   },
   "dependencies": {
     "@fireworks-js/react": "^2.10.8",
@@ -22,6 +23,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "postcss": "^8",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },

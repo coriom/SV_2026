@@ -9,7 +9,7 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
 });
 
-// 36 images
+// 18 images (valid ones). Background will render 36 tiles by looping.
 const images = [
   "/game-photos/1.avif",
   "/game-photos/2.avif",
@@ -29,32 +29,13 @@ const images = [
   "/game-photos/16.avif",
   "/game-photos/17.avif",
   "/game-photos/18.avif",
-  "/game-photos/19.avif",
-  "/game-photos/20.avif",
-  "/game-photos/21.avif",
-  "/game-photos/22.avif",
-  "/game-photos/23.avif",
-  "/game-photos/24.avif",
-  "/game-photos/25.avif",
-  "/game-photos/26.avif",
-  "/game-photos/27.avif",
-  "/game-photos/28.avif",
-  "/game-photos/29.avif",
-  "/game-photos/30.avif",
-  "/game-photos/31.avif",
-  "/game-photos/32.avif",
-  "/game-photos/33.avif",
-  "/game-photos/34.avif",
-  "/game-photos/35.avif",
-  "/game-photos/36.avif",
 ];
 
 export default function ValentinesProposal() {
   const [step, setStep] = useState(0);
-  const [position, setPosition] = useState<{
-    top: string;
-    left: string;
-  } | null>(null);
+  const [position, setPosition] = useState<{ top: string; left: string } | null>(
+    null,
+  );
   const [showFireworks, setShowFireworks] = useState(false);
 
   const getRandomPosition = () => {
@@ -65,9 +46,8 @@ export default function ValentinesProposal() {
 
   useEffect(() => {
     if (step < 2) {
-      // Change step after 5 seconds
       const timer = setTimeout(() => {
-        setStep((prevStep) => prevStep + 1);
+        setStep((prev) => prev + 1);
       }, 5000);
 
       return () => clearTimeout(timer);
@@ -91,9 +71,10 @@ export default function ValentinesProposal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            Congratulations! You have completed the game.
+            Bien joué Mademoiselle ! 🎉
           </motion.h2>
         )}
+
         {step === 1 && (
           <motion.h2
             key="step-1"
@@ -103,9 +84,10 @@ export default function ValentinesProposal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            I have a surprise for you!
+            J'ai une question très importante à te poser... 😳
           </motion.h2>
         )}
+
         {step === 2 && (
           <motion.div
             key="step-2"
@@ -115,31 +97,36 @@ export default function ValentinesProposal() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center"
           >
-            {/* Image Grid Background */}
+            {/* Image Grid Background (36 tiles from 18 images, looped) */}
             <div className="absolute inset-0 grid grid-cols-6 opacity-10">
-              {images.slice(0, 36).map((src, index) => (
-                <div key={index} className="relative h-full">
-                  <Image
-                    src={src}
-                    alt={`Memory ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
+              {Array.from({ length: 36 }, (_, index) => {
+                const src = images[index % images.length];
+                return (
+                  <div key={index} className="relative h-full">
+                    <Image
+                      src={src}
+                      alt={`Memory ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             <h2
               className={`text-5xl font-semibold mb-8 ${playfairDisplay.className}`}
             >
-              Will you be my Valentine?
+              Tu veux être ma Valentine ? 💖
             </h2>
+
             <Image
               src="/sad_hamster.png"
               alt="Sad Hamster"
               width={200}
               height={200}
             />
+
             <div className="flex space-x-4 mt-10">
               <button
                 className="px-6 py-2 text-lg font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl hover:from-pink-600 hover:to-rose-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -147,6 +134,7 @@ export default function ValentinesProposal() {
               >
                 Yes, I will! 🥰
               </button>
+
               <button
                 className="px-6 py-2 text-lg font-semibold text-white bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl hover:from-gray-600 hover:to-gray-700 transform hover:scale-95 transition-all duration-300 shadow-lg"
                 style={
@@ -166,6 +154,7 @@ export default function ValentinesProposal() {
             </div>
           </motion.div>
         )}
+
         {step === 3 && (
           <motion.div
             key="step-3"
@@ -175,8 +164,8 @@ export default function ValentinesProposal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            Thank you for accepting, I love you! 💕
-            <p className="text-sm mt-4">For more information, write me!!! 💌</p>
+            Nickel, alors on se retrouve le 12 prochain ! 💕
+            <p className="text-sm mt-4">Et avec une suberbe tenue... 💌</p>
             <Image
               src="/hamster_jumping.gif"
               alt="Hamster Feliz"
@@ -191,9 +180,7 @@ export default function ValentinesProposal() {
       {showFireworks && (
         <div className="absolute w-full h-full">
           <Fireworks
-            options={{
-              autoresize: true,
-            }}
+            options={{ autoresize: true }}
             style={{
               width: "100%",
               height: "100%",
