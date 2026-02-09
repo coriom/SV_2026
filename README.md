@@ -1,4 +1,5 @@
 To use it, add in puclic a folder name "game-photos".
+
 In this folder you can now add 18 pictures names :
 
 1.avif
